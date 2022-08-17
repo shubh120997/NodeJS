@@ -1,0 +1,27 @@
+CREATE DATABASE crud_authentication;
+
+use crud_authentication;
+
+drop table EmployeeDetails;
+create table EmployeeDetails(
+	EmpId int,
+    FullName char(30),
+    ManagerId int,
+    DateOfJoining varchar(255),
+    City char(15)
+);
+
+create table EmployeeSalary(
+	EmpId int,
+    Project char(2),
+    Salary int,
+    Variable int
+);
+
+insert into EmployeeDetails values(121, "John Snow", 321, "01/31/2014", "Toronto");
+insert into EmployeeDetails values(321, "Walter White", 986, "01/30/2015", "California");
+insert into EmployeeDetails values(121, "Kuldeep Rana", 876, "27/11/2016", "New Delhi");
+
+insert into EmployeeSalary values(121, "P1", 8000, 500);
+insert into EmployeeSalary values(321, "P2", 10000, 1000);
+insert into EmployeeSalary values(421, "P1", 12000, 0);

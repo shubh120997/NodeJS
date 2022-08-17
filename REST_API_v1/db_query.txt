@@ -1,0 +1,46 @@
+
+/-------Create Database---------/
+
+CREATE DATABASE rest_api_crud_db;
+
+CREATE  TABLE IF NOT EXISTS `employees` (
+  `id` BIGINT UNSIGNED AUTO_INCREMENT,
+  `first_name` VARCHAR(255) NOT NULL,
+  `last_name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(50) NOT NULL,
+  `salary` DECIMAL(11,2) UNSIGNED DEFAULT 0.00,
+  PRIMARY KEY (`id`)
+);
+
+
+INSERT INTO `employees` 
+	(`first_name`, `last_name`, `email`, `phone`, `salary`) 
+    VALUES 
+    	('Shubham', 'Patel', 'shubham@gmail.com', '1234567890', '15000.00'),
+    	('Jaiki', 'Patel', 'jaiki@gmail.com', '9876543210', '18000.00'),
+        ('Akhand', 'Singh', 'akhand@gmail.com', '277473483', '20000.00');
+
+/------------Create Database Connection------------/
+
+mkdir config
+cd config
+touch db.config.js
+
+//In db.config.js
+
+'use strict';
+const mysql = require('mysql');
+//local mysql db connection
+const dbConn = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : '',
+  database : 'node_mysql_crud_db'
+});
+dbConn.connect(function(err) {
+  if (err) throw err;
+  console.log("Database Connected!");
+});
+module.exports = dbConn;
+

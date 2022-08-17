@@ -1,0 +1,42 @@
+-----------------Create Query-------------------
+
+CREATE TABLE users(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    firstName char(10) NOT NULL,
+    lastName char(10) NOT NULL,
+    age int,
+    gender char(7) NOT NULL,
+    email char(20) NOT NULL,
+    status char(20) DEFAULT 'active'
+);
+
+CREATE TABLE IF NOT EXISTS auth (
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    phone_no int NOT NULL,
+    user_id int UNIQUE,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title char(255),
+    content text,
+    user_id int NOT NULL,
+    status char(20) DEFAULT 'active',
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+
+-------------Triggers---------------
+
+CREATE TRIGGER auto_fill_auth
+AFTER INSERT ON users
+FOR EACH ROW
+INSERT INTO auth (user_id) VALUES (New.id);
+-------------Insert Query---------------
+
+INSERT INTO users (firstName, lastName, age, gender, email) 
+	VALUES 
+    	('jaiki', 'patel', 24, 'Male', 'jaiki@gmail.com'),
+        ('Shubham', 'Patel', 23, 'Male', 'shubham@gmail.com'),
+        ('Akhand', 'Singh', 26, 'Male', 'akhand@gmail.com');

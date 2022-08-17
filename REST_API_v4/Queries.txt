@@ -1,0 +1,29 @@
+/*************CREATE TABLE QUERIES****************/
+
+CREATE TABLE IF NOT EXISTS users_register(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    firstName char(10) NOT NULL,
+    lastName char(10) NOT NULL,
+    age int,
+    gender char(10),
+    type char(10) DEFAULT 'user',
+    status char(10) DEFAULT 'active'
+)
+
+CREATE TABLE IF NOT EXISTS user_login(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email char(20) NOT NULL UNIQUE,
+    password char(76),
+    user_id int unique,
+    FOREIGN KEY(user_id) REFERENCES users_register(id)
+)
+
+CREATE TABLE IF NOT EXISTS user_post(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title char(60) NOT NULL, 
+    content longtext NOT NULL,
+    user_id int,
+    FOREIGN KEY(user_id) REFERENCES users_register(id)
+)
+
+
