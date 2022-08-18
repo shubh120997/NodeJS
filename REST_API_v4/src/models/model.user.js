@@ -1,16 +1,19 @@
+const e = require("express");
 const dbconn = require("../../config/db.config");
 
-exports.findByEmail = (email) => {
+exports.findByEmail = async (email) => {
     const selectQuery = `Select * from user_login log JOIN user_register reg
                         ON reg.id = log.user_id WHERE email = ? and status ='active'`;
-    return dbconn.promise().query(selectQuery, email);
+    const data = await dbconn.promise().query(selectQuery, email);
+    return (data[0])[0];
 }
 
-exports.registerProfileDetails = (input) => {
+exports.registerProfileDetails = async(input) => {
     const {firstName, lastName, age, gender, dob, mobileNo} = input;
     const query = `INSERT INTO user_register (firstName, lastname, age, gender, dob, mobileNo)
                     Values(?,?,?,?,?,?)`;
-    return dbconn.promise().query(query, [firstName, lastName, age, gender, dob, mobileNo]);
+    const data = await dbconn.promise().query(query, [firstName, lastName, age, gender, dob, mobileNo]);
+    return data[0];
 }
 
 exports.registerLoginDetails = (email, pass, id, token) => {
@@ -37,4 +40,23 @@ exports.updatePassword = (input, email) => {
 exports.deleteUser = (input) => {
     const query = `UPDATE user_register SET status = 'deactive' WHERE id = ?`;
     return dbconn.promise().query(query, input);
+}
+
+exports.findOtpByEmail = async (email) => {
+    const query = `SELECT * FROM OTP WHERE email = ?`;
+    const data = await dbconn.promise().query(query, email);
+    // console.log(data[0]);
+    return data[0];
+}
+
+exports.insertOtp = async(email, id, otp) =>{
+    const query = `INSERT INTO OTP (email, user_id, otp) VALUES(?, ?, ?)`;
+    const data = await dbconn.promise().query(query, [email, id, otp]);
+    return;
+}
+
+exports.updateOtpStatus = async(email) => {
+    const query = `UPDATE OTP SET is_verify = 'Yes' WHERE email = ?`;
+    const data = await dbconn.promise().query(query, email);
+    return;
 }

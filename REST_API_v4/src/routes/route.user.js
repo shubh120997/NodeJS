@@ -21,5 +21,9 @@ route.get("/logout", tokenVerify, controller.userLogout);
 
 route.patch("/delete", tokenVerify, isAdmin, controller.deleteUser);
 
+route.get("/send-email", tokenVerify, controller.sendMail);
+
+route.post("/otp-verify", tokenVerify, controller.verifyOtp);
+
 module.exports = route;
 

@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const model = require("../models/model.user");
 
 exports.registerUser = async (req, res) => {
@@ -7,10 +8,11 @@ exports.registerUser = async (req, res) => {
     try{
         const user = await model.findByEmail(input.email);
 
-        if(user[0].length != 0) 
+        if(user) 
             res.send("Email is already exist please enter another email");
         else {
             const data = await model.registerProfileDetails(input);
+            console.log(data.insertId);
             const token = await jwt.sign(
                 {email: input.email, user_type: 'user'}, 
                 process.env.TOKEN_SECRET,
@@ -18,7 +20,7 @@ exports.registerUser = async (req, res) => {
             );
             if(data){
                 const hashPass = await bcrypt.hash(input.pass,10);
-                await model.registerLoginDetails(input.email, hashPass, data.insertid, token);
+                await model.registerLoginDetails(input.email, hashPass, data.insertId, token);
                 res.send({
                     message: "User signup sucessfully",
                     token: token
@@ -32,8 +34,7 @@ exports.registerUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
     try{
-        const data1 = await model.findByEmail(req.body.email);
-        const user = (data1[0])[0];
+        const user = await model.findByEmail(req.body.email);
         if(user){
             console.log(user);
             if(bcrypt.compareSync(req.body.pass, user.pass)){
@@ -59,18 +60,14 @@ exports.loginUser = async (req, res) => {
 
 exports.getProfile = async(req, res) => {
     try{
-        const data = await model.findByEmail(res.locals.email);
-        const userData = (data[0])[0];
-        if(!userData){
-            return res.send("User doesn't exists");
-        }
+        const user = await model.findByEmail(res.locals.email);
         res.send({
-            FirstName: userData.firstName,
-            LastName: userData.lastName,
-            Age: userData.age,
-            Email: userData.email,
-            PhoneNo: userData.mobileNo,
-            DateOfBirth: userData.dob.toLocaleString().split(",")[0]
+            FirstName: user.firstName,
+            LastName: user.lastName,
+            Age: user.age,
+            Email: user.email,
+            PhoneNo: user.mobileNo,
+            DateOfBirth: user.dob.toLocaleString().split(",")[0]
         });
     }catch(err){
         res.send(err);
@@ -88,8 +85,7 @@ exports.updateProfile = async(req, res) => {
 
 exports.resetPassword = async(req, res) => {
     try{
-        const data = await model.findByEmail(res.locals.email);
-        const user = (data[0])[0];
+        const user = await model.findByEmail(res.locals.email);
         if(bcrypt.compareSync(req.body.oldPass, user.pass)){
             const hashPass = await bcrypt.hash(req.body.newPass,10);
             await model.updatePassword(hashPass, res.locals.email);
@@ -106,8 +102,7 @@ exports.resetPassword = async(req, res) => {
 
 exports.forgotPassword = async(req, res) => {
     try{
-        const data = await model.findByEmail(req.body.email);
-        const user = (data[0])[0];
+        const user = await model.findByEmail(req.body.email);
         if(user){
             if(req.body.newPass === req.body.confirmPass){
                 const hashPass = await bcrypt.hash(req.body.newPass,10);
@@ -139,3 +134,69 @@ exports.deleteUser = async(req,res) => {
         res.send(err);
     }
 }
+
+exports.sendMail = async(req, res,) => {
+    try{
+        const user = await model.findByEmail(res.locals.email);
+        if(user){
+            let otp = OTPgenerator();
+            const data = await model.findOtpByEmail(user.email);
+            if(data.length == 0 || data[0].is_verify != 'Yes'){
+                await model.insertOtp(user.email, user.user_id, otp);
+                let transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.MAIL_ID,
+                        pass: process.env.MAIL_PASSWORD,
+                    },
+                });
+                
+                let mailOptions = {
+                  from: process.env.MAIL_ID,
+                  to: res.locals.email,
+                  subject: "OTP verification",
+                  text: otp,
+                };
+                
+                const info = await transporter.sendMail(mailOptions);
+                return res.send("Email send successfully");
+            }
+            else{
+                return res.send("Verification is already done");
+            }        
+        }
+        else{
+            return res.send("Email doesn't exists");
+        }
+    }catch(err){
+        console.log(err);
+        res.send(err);
+    }
+}
+
+exports.verifyOtp = async(req, res) => {
+    try{
+        const data = await model.findOtpByEmail(res.locals.email);
+        if(data[0].otp === req.body.otp){
+            await model.updateOtpStatus(res.locals.email);
+            res.send("Verification Sucessfull");
+        }
+        else{
+            res.send("Otp doesn't match");
+        }
+    }catch(err){
+
+    }
+}
+
+let OTPgenerator = () => {
+    let numbers = "0123456789";
+    let OTP = "";
+    for (let i = 0; i < 4; i++) {
+      OTP += numbers[Math.floor(Math.random() * 10)];
+    }
+    return OTP;
+};
+  
+  
+  

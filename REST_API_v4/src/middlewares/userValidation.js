@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-
+const model = require("../models/model.user");
 const response = {
     success : 0,
     message : "Session expired...Please Login again....."
@@ -11,11 +11,17 @@ exports.tokenVerify = async (req, res, next) => {
         if(token){
             const data = await jwt.verify(token, process.env.TOKEN_SECRET);
             if(data){
-                res.locals = {
-                    type: data.user_type,
-                    email: data.email
+                const user = await model.findByEmail(data.email);
+                if(user.token === token){
+                    res.locals = {
+                        type: data.user_type,
+                        email: data.email
+                    }
+                    next();
                 }
-                next();
+                else{
+                    return res.send(response);
+                }
             }
             else{
                 res.json(response);

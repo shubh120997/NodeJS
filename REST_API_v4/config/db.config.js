@@ -44,7 +44,16 @@ pool.getConnection((err, connection) => {
             status char(10) DEFAULT 'pending',
             delete_by char(5) NULL,
             FOREIGN KEY(user_id) REFERENCES user_register(id)
-        );`
+        )`,
+        `CREATE TABLE  IF NOT EXISTS OTP(
+            id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            otp int NULL,
+            email char(20) NOT NULL UNIQUE,
+            user_id int NOT NULL UNIQUE,
+            is_verify char(5) DEFAULT 'No',
+            Otp_Timestamp TIMESTAMP DEFAULT NOW(),
+            FOREIGN KEY(user_id) REFERENCES user_register(id)
+        )`
     ];
 
     for(let i=0; i < queries.length; i++){
